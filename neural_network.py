@@ -163,9 +163,3 @@ def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimize
   # print("Mean value of time: " + str(times.mean())+"\n")
   print(config)
   return results, times
-
-
-
-
-
-
