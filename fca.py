@@ -218,10 +218,10 @@ class FCA:
         concepts = []
         
         if (upper_supp == 0) or (purity_value == 0 and accuracy_value == 0 and f_measure_value == 0):
-            for index in self.lattice.items():
+            for index in self.lattice:
                 if self.support[index] >= lower_supp:
                     concepts.append(index)
-            return concepts, top_classes
+            return concepts
 
         for index, concept in self.lattice.items():
             if self.support[index] > upper_supp:
