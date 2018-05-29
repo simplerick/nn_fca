@@ -95,16 +95,7 @@ class FCA:
         Save lattice to file with specified path 
         Params: path
         """
-        f = open(path, 'w')
-        f.writelines(" ".join(map(str,self.G))+'\n')
-        f.writelines(" ".join(map(str,self.M))+'\n')
-        for index, concept in self.lattice.items():
-            f.writelines('%d;%s;%s\n' % (
-                index,
-                ','.join([str(d) for d in concept['extent']]),
-                ','.join([str(d) for d in concept['intent']])
-            ))
-        f.close()
+        np.savez(path,M=self.M,G=self.G,lattice=self.lattice)
 
 
 
@@ -114,36 +105,42 @@ class FCA:
         Params: path
         Returns: lattice
         """
-        self.lattice = {}
-        f = open(path, 'r')
-        self.G = np.array(f.readline().split())
-        self.M = np.array(f.readline().split())
-        for line in f:
-            row = line.strip('\n').split(';')
-            self.lattice[int(row[0])] = {
-                'extent': np.array([int(s) for s in row[1].split(',')]),
-                'intent': np.array([int(s) for s in row[2].split(',')])
-            }
-        f.close()
+        data = np.load(path+".npz")
+        self.G = data['G']
+        self.M = data['M']
+        self.lattice = data['lattice'].item()
         return self.lattice
 
 
 
-    def save_partition(self, path='partition'):
+    def save_properties(self, path='properties'):
         """
-        Save partition to file with specified path 
+        Save properties to file with specified path 
         Params: path
         """
-        np.save(path,self.partition_to_classes)
+        np.savez(path,conf = self.conf,
+        support = self.support,
+        purity = self.purity,
+        accuracy = self.accuracy,
+        f_measure = self.f_measure,
+        stability  = self.stability,
+        partition = self.partition_to_classes)
 
 
 
-    def load_partition(self, path='partition'):
+    def load_properties(self, path='properties'):
         """
-        Load partition from file with specified path 
+        Load properties from file with specified path 
         Params: path
         """
-        self.partition_to_classes = np.load(path+".npy").item()
+        data = np.load(path+".npz")
+        self.conf = data['conf'].item()
+        self.support = data['support'].item()
+        self.purity = data['purity'].item()
+        self.accuracy = data['accuracy'].item()
+        self.f_measure = data['f_measure'].item()
+        self.stability = data['stability'].item()
+        self.partition_to_classes = data['partition'].item()
 
 
 
@@ -282,7 +279,7 @@ class FCA:
         for i in self.adj:
             for j in self.adj[i]:
                 self.reversed_adj[j].add(i)
+                
         if reverse:
             return self.reversed_adj
-
         return self.adj
