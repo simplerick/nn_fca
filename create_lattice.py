@@ -14,6 +14,8 @@ X_train, y_train, X_val, y_val, X_test, y_test = train_test_split(
 
 fca = FCA(X_train)
 fca.build_lattice()
-# fca.calculate_properties(y_cl)
+fca.build_cover_relation()
+fca.calculate_properties(y_cl)
+fca.calculate_stability()
 fca.save_lattice()
-# fca.save_partition()
+fca.save_properties()
