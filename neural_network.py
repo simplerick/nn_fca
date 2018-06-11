@@ -4,21 +4,22 @@ import time
 
 
 
-def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimizer="gradient_descent",learning_rate=0.5, tests=3, num_epoch= 1000, config=""):
+def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimizer="gradient_descent",learning_rate=0.5, batch_size=100, tests=3, num_epoch= 1000, config=""):
 
   dim_in = X_train.shape[1]
   dim_out = y_train.shape[1]
-  batch_size = 100
   n_samples = X_train.shape[0]
   first_level = []
   last_level = {}
   weight = {}
   bias = {}
 
+  tf.reset_default_graph()
+
   # n = np.array([tf.Variable(0.) for _ in range(len(adj))])
   n = np.array([tf.Variable(0., name="Node") for _ in range(len(adj))])
 
-  tf.reset_default_graph()
+  
   sess = tf.Session()
 
   x = tf.placeholder(tf.float32, [None, dim_in], name="x")
@@ -37,9 +38,9 @@ def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimize
           for j in adj[i]:
               last_level.discard(j)
               weight[str(i) + ',' + str(j)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.1), name="W_lattice")
-              tf.summary.histogram("weights", weight[str(i) + ',' + str(j)])
+              # tf.summary.histogram("weights", weight[str(i) + ',' + str(j)])
           bias[str(i)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.1), name="B_lattice")
-          tf.summary.histogram("biases", bias[str(i)])
+          # tf.summary.histogram("biases", bias[str(i)])
 
 
   last_level = list(last_level)
@@ -54,21 +55,21 @@ def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimize
 
   for i in first_level:
       weight['in,'+str(i)] = tf.Variable(tf.truncated_normal([dim_in, 1], stddev=0.1), name="W_in")
-      tf.summary.histogram("weights", weight['in,'+str(i)])
+      # tf.summary.histogram("weights", weight['in,'+str(i)])
 
   for i in last_level:
       weight[str(i)+',out'] = tf.Variable(tf.truncated_normal([1, dim_out], stddev=0.1), name="W_out")
-      tf.summary.histogram("weights", weight[str(i)+',out'])
+      # tf.summary.histogram("weights", weight[str(i)+',out'])
 
   bias['out'] = tf.Variable(tf.truncated_normal([1,dim_out], stddev=0.1), name="B_out")
-  tf.summary.histogram("biases", bias['out'])
+  # tf.summary.histogram("biases", bias['out'])
 
   with tf.name_scope("resnet"):
       for c in res_connect:
           temp = np.zeros(dim_out)
           temp[c] = 1
           weight['res_'+str(c)] = tf.constant(temp, dtype=tf.float32, name="W_res")
-          tf.summary.histogram("weights",  weight['res_'+str(c)])
+          # tf.summary.histogram("weights",  weight['res_'+str(c)])
 
 
 
@@ -104,17 +105,18 @@ def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimize
 
 
 
-  y = tf.nn.softmax(y0)
+  # y = tf.nn.softmax(y0)
 
 
   # training
   print('Training')
 
   with tf.name_scope("cross_entropy"):
-      cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ *
-                                                tf.log(y), reduction_indices=[1]))
+      # cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ *
+      #                                           tf.log(y), reduction_indices=[1]))
+      cross_entropy = tf.reduce_mean(
+          tf.nn.softmax_cross_entropy_with_logits_v2(labels=y_, logits=y0))
       tf.summary.scalar("cross_entropy", cross_entropy)
-  # train_step = tf.train.MomentumOptimizer(0.003,0.85).minimize(cross_entropy)
   with tf.name_scope("train"):
     if optimizer=="gradient_descent":
       train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(cross_entropy)
@@ -124,7 +126,7 @@ def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimize
       train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
 
   with tf.name_scope("accuracy"):
-    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+    correct_prediction = tf.equal(tf.argmax(y0, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar("accuracy", accuracy)
 
@@ -141,7 +143,7 @@ def model(adj,res_connect, X_train, y_train, X_test, y_test, prob = {}, optimize
       init = tf.global_variables_initializer()
       sess = tf.Session()
       sess.run(init)
-      writer.add_graph(sess.graph)
+      # writer.add_graph(sess.graph)
       for i in range(num_epoch):
           indices = np.random.choice(n_samples, batch_size)
           x_batch, y_batch = X_train[indices], y_train[indices]

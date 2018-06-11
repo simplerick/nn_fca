@@ -13,7 +13,7 @@ class FCA:
         self.I = data.copy().astype(dtype='bool')
         self.G = np.arange(self.I.shape[0])
         self.M = np.arange(self.I.shape[1])
-        self.lattice = {} 
+        self.lattice = []
         self.adj = {}   #adjacency lists for cover relation
         self.reversed_adj = {}
         self.conf = {} 
@@ -51,11 +51,10 @@ class FCA:
         """ 
         Calculate set of formal concepts (Ganter, Wille algorithm - finding in lectic order)
         Params: level=5 - restriction on maximal number of attributes that can be in formal concept
-        Return type: set
+        Return type: list
         """
-        self.lattice = {}
+        self.lattice = []
         A = []
-        concept_index = 0
 
         while True:
             max_elem = len(self.M)-1
@@ -79,8 +78,7 @@ class FCA:
                     else:
                         A = attrs.tolist()
                         if len(objs) > 0 and len(attrs) > 0:
-                            self.lattice[concept_index] = {'extent': objs, 'intent':attrs}
-                            concept_index += 1
+                            self.lattice.append({'extent': objs, 'intent':attrs})
                         break
 
             if len(A) == 0:
@@ -90,7 +88,7 @@ class FCA:
 
 
 
-    def save_lattice(self, path='lattice'):
+    def save_lattice(self, path='data/lattice'):
         """
         Save lattice to file with specified path 
         Params: path
@@ -99,7 +97,7 @@ class FCA:
 
 
 
-    def load_lattice(self, path='lattice'):
+    def load_lattice(self, path='data/lattice'):
         """
         Load lattice from file with specified path
         Params: path
@@ -108,12 +106,12 @@ class FCA:
         data = np.load(path+".npz")
         self.G = data['G']
         self.M = data['M']
-        self.lattice = data['lattice'].item()
+        self.lattice = data['lattice']
         return self.lattice
 
 
 
-    def save_properties(self, path='properties'):
+    def save_properties(self, path='data/properties'):
         """
         Save properties to file with specified path 
         Params: path
@@ -128,7 +126,7 @@ class FCA:
 
 
 
-    def load_properties(self, path='properties'):
+    def load_properties(self, path='data/properties'):
         """
         Load properties from file with specified path 
         Params: path
@@ -168,8 +166,10 @@ class FCA:
         self.accuracy = {}
         self.f_measure = {}
         self.partition_to_classes = {}
+        self.support = {}
         assert(len(self.lattice)>0)
-        for index, concept in self.lattice.items():
+        for index in range(len(self.lattice)):
+            concept = self.lattice[index]
             self.support[index] = len(concept['extent'])/self.I.shape[0]
             class_frequency = classes[concept['extent'], :].sum(axis=0)
             top_class = np.argmax(class_frequency)
@@ -215,12 +215,13 @@ class FCA:
         concepts = []
         
         if (upper_supp == 0) or (purity_value == 0 and accuracy_value == 0 and f_measure_value == 0):
-            for index in self.lattice:
+            for index in range(len(self.lattice)):
                 if self.support[index] >= lower_supp:
                     concepts.append(index)
             return concepts
 
-        for index, concept in self.lattice.items():
+        for index in range(len(self.lattice)):
+            concept = self.lattice[index]
             if self.support[index] > upper_supp:
                 concepts.append(index)
                 continue
@@ -238,12 +239,12 @@ class FCA:
         Params: concept_indices 
         Returns: reduced lattice
         """
-        lattice = {}
+        lattice = []
         partition = {}
         new_index = 0
-        for index, concept in self.lattice.items():
+        for index in range(len(self.lattice)):
             if index in concept_indices:
-                lattice[new_index] = self.lattice[index]
+                lattice.append(self.lattice[index])
                 partition[new_index] = self.partition_to_classes[index]
                 new_index += 1
         self.lattice = lattice
@@ -259,7 +260,7 @@ class FCA:
         Return type: dict with pairs (int:set)
         """
         n = len(self.lattice)
-        concepts = np.zeros((len(self.lattice), len(self.M)), dtype='bool')
+        concepts = np.zeros((n, len(self.M)), dtype='bool')
         self.adj = {}
 
         for i in reversed(range(n)):
