@@ -38,6 +38,7 @@ def select_good(a1,a2,a3,size):
 
 
 selected = set()
+params_values = {}
 configs = []
 
 A1 = np.arange(1,4,0.5)
@@ -52,7 +53,13 @@ for size in Size:
     for a1 in A1:
         for a2 in A2:
             for a3 in A3:
-                selected.add(select_good(a1,a2,a3,size))
+                s = select_good(a1,a2,a3,size)
+                if s in selected:
+                    params_values[s].append((a1,a2,a3,size))
+                else:
+                    selected.add(s)
+                    params_values[s] = [(a1,a2,a3,size)]
+
 
 print(len(selected))
 
@@ -74,7 +81,7 @@ for sample in selected:
 
 # print(configs)
 np.save("data/configs", configs)
-
+np.save("data/params_values", params_values)
 
 
 

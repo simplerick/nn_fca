@@ -21,7 +21,7 @@ X_train, y_train, X_test, y_test = train_test_split(
 
 
 # training params
-tests = 5
+tests = 15
 num_epoch = 1000
 optimizer="adam"
 learning_rate = 0.001
