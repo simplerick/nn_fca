@@ -1,0 +1,9 @@
+gcloud ml-engine jobs submit training Job_Titanic2 \
+    --staging-bucket gs://lattice_project \
+    --job-dir gs://lattice_project \
+    --package-path /home/o2chan/TrainFCA \
+    --module-name TrainFCA.task \
+    --python-version 3.5 \
+    --runtime-version 1.8 \
+    --user_first_arg=  DATA_SET \
+    --user_second_arg= CONFIG_FILE
