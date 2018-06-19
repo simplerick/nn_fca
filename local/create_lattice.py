@@ -4,10 +4,10 @@ from data_loader import *
 
 
 
-X, y, object_labels, attribute_labels = get_titanic()[:4]
-y_cl = one_hot(y, n_classes=2)
-X_train, y_train, X_val, y_val, X_test, y_test = train_test_split(
-    X, y_cl, tp=0.6, vp=0.2)
+X, y, object_labels, attribute_labels = get_car_evaluation()[:4]
+y_cl = one_hot(y, n_classes=4)
+X_train, y_train, X_test, y_test = train_test_split(
+    X, y_cl, tp=0.8)
 
 
 fca = FCA(X_train)

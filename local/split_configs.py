@@ -1,7 +1,7 @@
 import numpy as np
 
-
-configs = np.load("data/configs.npy")
+name = input("Config file name: ")
+configs = np.load("data/"+name+".npy")
 print(len(configs))
 dataset = input("Dataset: ")
 n = int(input("Number of parts: "))

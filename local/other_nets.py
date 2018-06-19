@@ -3,10 +3,10 @@ from data_loader import *
 import tensorflow as tf
 
 
-X, y, object_labels, attribute_labels = get_titanic()[:4]
-y_cl = one_hot(y, n_classes=2)
-X_train, y_train, X_val, y_val, X_test, y_test = train_test_split(
-    X, y_cl, tp=0.6, vp=0.2)
+X, y, object_labels, attribute_labels = get_car_evaluation()[:4]
+y_cl = one_hot(y, n_classes=4)
+X_train, y_train, X_test, y_test = train_test_split(
+    X, y_cl, tp=0.8)
 
 
 dim_in = X_train.shape[1]
@@ -15,8 +15,9 @@ batch_size = 100
 n_samples = X_train.shape[0]
 num_epoch = 1000
 tests = 10
+lr = 0.001
 
-layer_dims = [dim_in, 15,15,15, dim_out]
+layer_dims = [dim_in, 15, 15,15,15, dim_out]
 
 x = tf.placeholder(tf.float32, [None,dim_in])
 y_ = tf.placeholder(tf.float32, [None,dim_out])
@@ -50,7 +51,7 @@ with tf.name_scope("cross_entropy"):
                                               tf.log(y), reduction_indices=[1]))
 
 with tf.name_scope("train"):
-    train_step = tf.train.GradientDescentOptimizer(0.3).minimize(cross_entropy)
+    train_step = tf.train.AdamOptimizer(lr).minimize(cross_entropy)
 
 with tf.name_scope("accuracy"):
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
@@ -78,7 +79,7 @@ for i in range(len(results)):
 print('\n')
 print(np.mean(results))
 
-f = open('dense_nn_perfomance', 'a')
+f = open('data/dense_nn_perfomance_car', 'a')
 l = ",".join(map(str,layer_dims[1:-1]))
 l = l+(10-len(l))*" "
 l += ",".join(list(map(lambda x: "%.2f" % x,results))) 

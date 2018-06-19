@@ -6,8 +6,8 @@ from fca import*
 
 
 
-X, y, object_labels, attribute_labels = get_titanic()[:4]
-y_cl = one_hot(y, n_classes=2)
+X, y, object_labels, attribute_labels = get_car_evaluation()[:4]
+y_cl = one_hot(y, n_classes=4)
 X_train, y_train, X_test, y_test = train_test_split(
     X, y_cl, tp=0.8)
 
@@ -25,9 +25,9 @@ batch_size = 100
 
 
 
-for adj, res_connect, weights in configs[6:8]:
+for adj, res_connect, weights, conf in configs[6:8]:
     
-    results, times = model(adj,res_connect, weights, X_train, y_train, X_test, y_test, prob = {}, optimizer=optimizer,learning_rate=learning_rate, batch_size=batch_size, tests=tests, num_epoch= num_epoch)
+    results, times = model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob = {}, optimizer=optimizer,learning_rate=learning_rate, batch_size=batch_size, tests=tests, num_epoch= num_epoch)
     record = str(adj)+";"+"%.0f" % times.mean()+";"+";".join(list(map(lambda x: "%.2f" % x,results)))+";"+ "%.4f" % results.mean()
     f = open('data/results', 'a')
     f.write(record+'\n')      

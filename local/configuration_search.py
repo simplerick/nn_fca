@@ -41,11 +41,11 @@ selected = set()
 params_values = {}
 configs = []
 
-A1 = np.arange(1,4,0.5)
-A2 = np.arange(1,4,0.5)
-A3 = np.arange(1,4,0.5)
-min_size = 6
-max_size = 15
+A1 = np.arange(1,2,0.5)
+A2 = np.arange(1,2,0.5)
+A3 = np.arange(1,2,0.5)
+min_size = 15
+max_size = 30
 Size = np.arange(min_size,max_size+1,1)
 
 for size in Size:
@@ -68,6 +68,7 @@ for sample in selected:
     fca.load_properties()
     fca.reduce_lattice(sample)
     adj = fca.build_cover_relation(reverse=True)
+    conf = fca.calculate_conf()
     res_connect = {}
     for i,c in fca.partition_to_classes.items():
         if c not in res_connect:
@@ -77,7 +78,8 @@ for sample in selected:
     for i in adj:
         if len(adj[i]) == 0:
             weights[i] = fca.lattice[i]['intent']
-    configs.append((adj,res_connect,weights))
+    configs.append((adj,res_connect,weights, conf))
+    params_values[str(adj)] = params_values.pop(sample)
 
 # print(configs)
 np.save("data/configs", configs)

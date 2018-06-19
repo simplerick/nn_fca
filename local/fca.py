@@ -116,7 +116,8 @@ class FCA:
         Save properties to file with specified path 
         Params: path
         """
-        np.savez(path,conf = self.conf,
+        np.savez(path,
+        conf = self.conf,
         support = self.support,
         purity = self.purity,
         accuracy = self.accuracy,

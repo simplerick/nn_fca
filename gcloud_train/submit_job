@@ -1,9 +1,8 @@
-gcloud ml-engine jobs submit training Job_Titanic2 \
+gcloud ml-engine jobs submit training car_conf23 \
     --staging-bucket gs://lattice_project \
-    --job-dir gs://lattice_project \
-    --package-path /home/o2chan/TrainFCA \
     --module-name TrainFCA.task \
+    --packages gs://lattice_project/car_conf10/8053180397835a357152fdd661011e8b1d290d40ee02bd02ea3884bf83eeacfe/TrainFCA-0.0.0.tar.gz \
     --python-version 3.5 \
     --runtime-version 1.8 \
-    --user_first_arg=  DATA_SET \
-    --user_second_arg= CONFIG_FILE
+    -- \
+    car car_conf3

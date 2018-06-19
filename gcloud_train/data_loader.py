@@ -44,8 +44,8 @@ def get_titanic(file_name='data_sets/titanic.txt'):
     return X, y, objects, attributes, y_label
 
 
-def get_zoo(file_name='data_sets//zoo.txt'):
-    data = [row.split(',') for row in open(file_name, 'r').read().strip('\n').split('\n')]
+def get_zoo(file_name='data_sets/zoo.txt'):
+    data = [row.split(',') for row in file_io.FileIO('gs://lattice_project/'+file_name, 'r').read().strip('\n').split('\n')]
     attributes = np.array([
         'hair',
         'feathers',
@@ -101,8 +101,8 @@ def get_zoo(file_name='data_sets//zoo.txt'):
     return X, y, objects, attributes, y_label
 
 
-def get_breast_cancer(file_name='data_sets//breast-cancer-wisconsin.txt'):
-    data = [row.split(',') for row in open(file_name, 'r').read().strip('\n').split('\n')]
+def get_breast_cancer(file_name='data_sets/breast-cancer-wisconsin.txt'):
+    data = [row.split(',') for row in file_io.FileIO('gs://lattice_project/'+file_name, 'r').read().strip('\n').split('\n')]
     attributes = np.array([
         'Clump Thickness',
         'Uniformity of Cell Size',
@@ -140,8 +140,8 @@ def get_breast_cancer(file_name='data_sets//breast-cancer-wisconsin.txt'):
     return X, y, objects, attributes, y_label
 
 
-def get_seismic_bumps(file_name='data_sets//seismic-bumps.txt'):
-    data = [row.split(',') for row in open(file_name, 'r').read().strip('\n').split('\n')]
+def get_seismic_bumps(file_name='data_sets/seismic-bumps.txt'):
+    data = [row.split(',') for row in file_io.FileIO('gs://lattice_project/'+file_name, 'r').read().strip('\n').split('\n')]
     objects = np.array([str(i) for i in range(len(data))])
     y_label = data[0][-1]
     X = []
@@ -169,8 +169,8 @@ def get_seismic_bumps(file_name='data_sets//seismic-bumps.txt'):
     return X, y, objects, attributes, y_label
 
 
-def get_car_evaluation(file_name='data_sets//car.txt'):
-    data = [row.split(',') for row in open(file_name, 'r').read().strip('\n').split('\n')]
+def get_car_evaluation(file_name='data_sets/car.txt'):
+    data = [row.split(',') for row in file_io.FileIO('gs://lattice_project/'+file_name, 'r').read().strip('\n').split('\n')]
     objects = [str(i) for i in range(len(data)-1)]
     y_label = data[0][-1]
     X = []
@@ -204,8 +204,8 @@ def get_car_evaluation(file_name='data_sets//car.txt'):
     return X, y, objects, attributes, y_label
 
 
-def get_mammographic_masses(file_name='data_sets//mammographic_masses.txt'):
-    data = [row.split(',') for row in open(file_name, 'r').read().strip('\n').split('\n')]
+def get_mammographic_masses(file_name='data_sets/mammographic_masses.txt'):
+    data = [row.split(',') for row in file_io.FileIO('gs://lattice_project/'+file_name, 'r').read().strip('\n').split('\n')]
     attributes = np.array([
         'BI-RADS',
         'Age:20',
@@ -256,17 +256,3 @@ def get_mammographic_masses(file_name='data_sets//mammographic_masses.txt'):
 
     return X, y, objects, attributes, y_label
 
-
-def get_random(n=1000, m=15, frequency=0.5):
-    index_ones = random.sample(range(n*m), int(frequency*n*m))
-    X = np.zeros((n, m))
-    for index in index_ones:
-        X[index//m, index%m] = 1
-    y = np.rint(np.random.uniform(size=n)).astype(dtype='int')
-
-    objects = [str(i) for i in range(n)]
-    attributes = [str(i) for i in range(m)]
-
-    y_label = 'class'
-
-    return X, y, objects, attributes, y_label
