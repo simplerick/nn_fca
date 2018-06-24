@@ -7,7 +7,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 
-def model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob = {}, optimizer="gradient_descent",learning_rate=0.5, batch_size=100, tests=3, num_epoch= 1000, config=""):
+def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, optimizer="gradient_descent",learning_rate=0.5, batch_size=100, tests=3, num_epoch= 100, config=""):
 
   dim_in = X_train.shape[1]
   dim_out = y_train.shape[1]
@@ -32,6 +32,9 @@ def model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob
   # initialization
   print('Initialization')
 
+  if conf != None:
+    c_mean = np.mean(list(conf.values()))
+
   last_level = set(adj.keys())
 
   with tf.name_scope("lattice"):
@@ -40,9 +43,12 @@ def model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob
               first_level.append(i)
           for j in adj[i]:
               last_level.discard(j)
-              weight[str(i) + ',' + str(j)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.1), name="W_lattice")
+              if conf != None:
+                weight[str(i) + ',' + str(j)] = tf.Variable(conf[str(j)+'_'+str(i)]+tf.truncated_normal([1, 1], stddev=0.01), name="W_lattice")
+              else:
+                weight[str(i) + ',' + str(j)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.1), name="W_lattice")
               # tf.summary.histogram("weights", weight[str(i) + ',' + str(j)])
-          bias[str(i)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.1), name="B_lattice")
+          bias[str(i)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.01), name="B_lattice")
           # tf.summary.histogram("biases", bias[str(i)])
 
 
@@ -93,7 +99,7 @@ def model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob
       for w in adj[v]:
           process(w)
           activation += weight[str(v) + ',' + str(w)] * n[w]
-          # activation += tf.nn.dropout(weight[str(v) + ',' + str(w)],keep_prob=prob[str(w)+"_"+str(v)]) * n[w]
+          # activation += tf.nn.dropout(weight[str(v) + ',' + str(w)],keep_prob=conf[str(w)+"_"+str(v)]) * n[w]
       n[v] = tf.nn.relu(activation + bias[str(v)])
 
   for v in last_level:
@@ -151,7 +157,7 @@ def model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob
       sess = tf.Session()
       sess.run(init)
       # writer.add_graph(sess.graph)
-      for i in range(num_epoch):
+      for i in range(int(num_epoch*n_samples/batch_size)):
           indices = np.random.choice(n_samples, batch_size)
           x_batch, y_batch = X_train[indices], y_train[indices]
           if i % 5 == 0:
@@ -162,6 +168,8 @@ def model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob
       toc = time.time()
 
       results[test] = sess.run(accuracy, feed_dict={x: X_test, y_: y_test})
+      print(test+1, end= " " )
+      print(results[test])
       times[test] = 1000*(toc - tic)
 
 

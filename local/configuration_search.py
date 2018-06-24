@@ -41,15 +41,15 @@ selected = set()
 params_values = {}
 configs = []
 
-A1 = np.arange(1,2,0.5)
-A2 = np.arange(1,2,0.5)
-A3 = np.arange(1,2,0.5)
-min_size = 15
+A1 = np.arange(1,1.5,0.5)
+A2 = np.arange(1,1.5,0.5)
+A3 = np.arange(1,1.5,0.5)
+min_size = 30
 max_size = 30
 Size = np.arange(min_size,max_size+1,1)
 
 for size in Size:
-    print("%d %%" % ((size-min_size)*100/(max_size-min_size)))
+    print("%d %%" % ((size-min_size+1)*100/(max_size-min_size+1)))
     for a1 in A1:
         for a2 in A2:
             for a3 in A3:

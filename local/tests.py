@@ -17,17 +17,18 @@ configs = np.load("data/configs.npy")
 
 # training params
 
-tests = 5
-num_epoch = 1000
+tests = 1
+num_epoch = 100
 optimizer="adam"
-learning_rate = 0.001
+learning_rate = 0.005
 batch_size = 100
 
 
 
-for adj, res_connect, weights, conf in configs[6:8]:
+for adj, res_connect, weights, conf in configs:
+    print(conf)
     
-    results, times = model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob = {}, optimizer=optimizer,learning_rate=learning_rate, batch_size=batch_size, tests=tests, num_epoch= num_epoch)
+    results, times = model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, optimizer=optimizer,learning_rate=learning_rate, batch_size=batch_size, tests=tests, num_epoch= num_epoch)
     record = str(adj)+";"+"%.0f" % times.mean()+";"+";".join(list(map(lambda x: "%.2f" % x,results)))+";"+ "%.4f" % results.mean()
     f = open('data/results', 'a')
     f.write(record+'\n')      

@@ -4,7 +4,7 @@ import time
 
 
 
-def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, prob = {}, optimizer="gradient_descent",learning_rate=0.5, batch_size=100, tests=3, num_epoch= 1000, config=""):
+def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, prob = {}, optimizer="gradient_descent",learning_rate=0.5, batch_size=100, tests=3, num_epoch= 100, config=""):
 
   dim_in = X_train.shape[1]
   dim_out = y_train.shape[1]
@@ -148,7 +148,7 @@ def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, prob = {},
       sess = tf.Session()
       sess.run(init)
       # writer.add_graph(sess.graph)
-      for i in range(num_epoch):
+      for i in range(int(num_epoch*n_samples/batch_size)):
           indices = np.random.choice(n_samples, batch_size)
           x_batch, y_batch = X_train[indices], y_train[indices]
           # if i % 5 == 0:
