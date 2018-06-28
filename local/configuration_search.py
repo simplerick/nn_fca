@@ -41,11 +41,11 @@ selected = set()
 params_values = {}
 configs = []
 
-A1 = np.arange(1,1.5,0.5)
+A1 = np.arange(0.1,0.3,0.5)
 A2 = np.arange(1,1.5,0.5)
 A3 = np.arange(1,1.5,0.5)
-min_size = 30
-max_size = 30
+min_size = 23
+max_size = 23
 Size = np.arange(min_size,max_size+1,1)
 
 for size in Size:
@@ -68,6 +68,7 @@ for sample in selected:
     fca.load_properties()
     fca.reduce_lattice(sample)
     adj = fca.build_cover_relation(reverse=True)
+    print(adj)
     conf = fca.calculate_conf()
     res_connect = {}
     for i,c in fca.partition_to_classes.items():

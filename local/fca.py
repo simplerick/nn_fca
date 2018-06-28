@@ -93,7 +93,7 @@ class FCA:
         Save lattice to file with specified path 
         Params: path
         """
-        np.savez(path,M=self.M,G=self.G,lattice=self.lattice)
+        np.savez(path,I = self.I, M=self.M,G=self.G,lattice=self.lattice)
 
 
 
@@ -104,6 +104,7 @@ class FCA:
         Returns: lattice
         """
         data = np.load(path+".npz")
+        self.I = data['I']
         self.G = data['G']
         self.M = data['M']
         self.lattice = data['lattice']
@@ -153,6 +154,12 @@ class FCA:
         self.conf = {}
         assert(len(self.adj)>0)
         for i in self.adj:
+            self.conf["in,"+str(i)] = []
+            for m in self.M:
+                r = np.zeros((len(self.G),), dtype=bool)
+                r[self.lattice[i]['extent']] = True
+                temp = np.logical_and(r,self.I[:,m])
+                self.conf["in,"+str(i)].append(np.count_nonzero(temp)/np.count_nonzero(self.I[:,m]))
             for j in self.adj[i]:
                 self.conf[str(i)+"_"+str(j)] = len(self.lattice[j]['extent'])/len(self.lattice[i]['extent'])
         return self.conf

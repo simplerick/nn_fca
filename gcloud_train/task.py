@@ -13,18 +13,17 @@ configs_file = sys.argv[2]
 output_file =  configs_file
 
 
-X, y, object_labels, attribute_labels = get_car_evaluation()[:4]
-y_cl = one_hot(y, n_classes=4)
-X_train, y_train, X_test, y_test = train_test_split(
-    X, y_cl, tp=0.8)
+X, y, object_labels, attribute_labels = get_mammographic_masses()[:4]
+y_cl = one_hot(y, n_classes=2)
+X_train, y_train, X_test, y_test = train_test_split(X, y_cl, tp=0.8)
 
 
 
 # training params
-tests = 15
-num_epoch = 1000
+tests = 20
+num_epoch = 300
 optimizer="adam"
-learning_rate = 0.001
+learning_rate = 0.003
 batch_size = 100
 
 
@@ -33,14 +32,18 @@ configs = np.load(f)
 
 
 for adj, res_connect, weights, conf in configs:
-    try:
-        results, times = model(adj,res_connect, weights, conf, X_train, y_train, X_test, y_test, prob = {}, optimizer=optimizer,learning_rate=learning_rate, batch_size=batch_size, tests=tests, num_epoch= num_epoch)
-    except Exception:
-        continue
+    for init in (1,2,3,4,5,6):
+        results, times = model(adj,{}, weights, X_train, y_train, X_test, y_test, conf, init, optimizer=optimizer,learning_rate=learning_rate, batch_size=batch_size, tests=tests, num_epoch= num_epoch)
+        record = str(init) +";"+"%.0f" % times.mean()+";"+";".join(list(map(lambda x: "%.3f" % x,results)))+";"+ "%.4f" % results.mean()
+        o = file_io.FileIO('gs://lattice_project/data/'+output_file, 'a')
+        o.write(record+'\n')
+    for init in (2,3,5,6):
+        results, times = model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, init, optimizer=optimizer,learning_rate=learning_rate, batch_size=batch_size, tests=tests, num_epoch= num_epoch)
+        record = "resnet;"+str(init) +";"+"%.0f" % times.mean()+";"+";".join(list(map(lambda x: "%.3f" % x,results)))+";"+ "%.4f" % results.mean()
+        o = file_io.FileIO('gs://lattice_project/data/'+output_file, 'a')
+        o.write(record+'\n') 
 
-    record = str(adj)+";"+"%.0f" % times.mean()+";"+";".join(list(map(lambda x: "%.2f" % x,results)))+";"+ "%.4f" % results.mean()
-    o = file_io.FileIO('gs://lattice_project/data/'+output_file, 'a')
-    o.write(record+'\n')      
+         
                     
 
 

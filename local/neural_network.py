@@ -7,7 +7,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 
-def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, optimizer="gradient_descent",learning_rate=0.5, batch_size=100, tests=3, num_epoch= 100, config=""):
+def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, init, optimizer="gradient_descent",learning_rate=0.5, batch_size=100, tests=3, num_epoch= 100, config=""):
 
   dim_in = X_train.shape[1]
   dim_out = y_train.shape[1]
@@ -32,8 +32,18 @@ def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, opti
   # initialization
   print('Initialization')
 
-  if conf != None:
-    c_mean = np.mean(list(conf.values()))
+  if init in (4,5):
+    r = 0
+    numb = 0
+    for temp in conf.values():
+        if type(temp) == float:
+            r += temp
+            numb += 1
+        else:
+            r += np.sum(temp)
+            numb += len(temp)
+    c_mean = r/numb
+    # print(c_mean)
 
   last_level = set(adj.keys())
 
@@ -43,12 +53,20 @@ def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, opti
               first_level.append(i)
           for j in adj[i]:
               last_level.discard(j)
-              if conf != None:
-                weight[str(i) + ',' + str(j)] = tf.Variable(conf[str(j)+'_'+str(i)]+tf.truncated_normal([1, 1], stddev=0.01), name="W_lattice")
-              else:
-                weight[str(i) + ',' + str(j)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.1), name="W_lattice")
+              if init == 1:
+                weight[str(i) + ',' + str(j)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.2), name="W_lattice")
+              elif init == 2:
+                weight[str(i) + ',' + str(j)] = tf.Variable(tf.truncated_normal([1, 1], stddev=np.sqrt(2/len(adj[i]))), name="W_lattice")
+              elif init == 3:
+                weight[str(i) + ',' + str(j)] = tf.Variable(conf[str(j)+'_'+str(i)], name="W_lattice")
+              elif init == 4:  
+                weight[str(i) + ',' + str(j)] = tf.Variable(conf[str(j)+'_'+str(i)]-c_mean+tf.truncated_normal([1, 1], stddev=0.1), name="W_lattice")
+              elif init == 5:
+                weight[str(i) + ',' + str(j)] = tf.Variable(conf[str(j)+'_'+str(i)]-c_mean+tf.truncated_normal([1, 1], stddev=np.sqrt(2/len(adj[i]))), name="W_lattice")
+              elif init == 6:
+                weight[str(i) + ',' + str(j)] = tf.Variable(conf[str(j)+'_'+str(i)]+tf.truncated_normal([1, 1], stddev=np.sqrt(2/len(adj[i]))), name="W_lattice")
               # tf.summary.histogram("weights", weight[str(i) + ',' + str(j)])
-          bias[str(i)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0.01), name="B_lattice")
+          bias[str(i)] = tf.Variable(tf.truncated_normal([1, 1], stddev=0), name="B_lattice")
           # tf.summary.histogram("biases", bias[str(i)])
 
 
@@ -63,18 +81,31 @@ def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, opti
   # bias['out'] = tf.Variable(tf.truncated_normal([dim_out], stddev = 0.1))
 
   for i in first_level:
-      dev = np.random.rand(dim_in,1)/np.sqrt(dim_in)
-      mean = np.zeros((dim_in,1))
-      mean[weights[i]] = 4/np.sqrt(dim_in)
-      weight['in,'+str(i)] = tf.Variable( mean+dev, dtype=tf.float32, name="W_in")
-      # weight['in,'+str(i)] = tf.Variable(tf.truncated_normal([dim_in, 1], stddev=0.1), name="W_in")
+      # dev = np.random.rand(dim_in,1)/np.sqrt(dim_in)
+      # mean = np.zeros((dim_in,1))
+      # mean[weights[i]] = 4/np.sqrt(dim_in)
+      # weight['in,'+str(i)] = tf.Variable( mean+dev, dtype=tf.float32, name="W_in")
+      if init == 1:
+        weight['in,'+str(i)] = tf.Variable(tf.truncated_normal([dim_in, 1], stddev=0.2), name="W_in")
+      elif init == 2:
+        weight['in,'+str(i)] = tf.Variable(tf.truncated_normal([dim_in, 1], stddev=np.sqrt(2/dim_in)), name="W_in")
+      elif init == 3:
+        weight['in,'+str(i)] = tf.Variable(np.reshape(conf["in,"+str(i)],(dim_in,1)), dtype=tf.float32, name="W_in")
+      elif init == 4:
+        weight['in,'+str(i)] = tf.Variable(np.reshape(conf["in,"+str(i)],(dim_in,1))-c_mean+tf.truncated_normal([dim_in, 1], stddev=0.1), name="W_in")
+      elif init == 5:
+        weight['in,'+str(i)] = tf.Variable(np.reshape(conf["in,"+str(i)],(dim_in,1))-c_mean+tf.truncated_normal([dim_in, 1], stddev=np.sqrt(2/dim_in)), name="W_in")
+      elif init == 6:
+        weight['in,'+str(i)] = tf.Variable(np.reshape(conf["in,"+str(i)],(dim_in,1))+tf.truncated_normal([dim_in, 1], stddev=np.sqrt(2/dim_in)), name="W_in") 
+
       # tf.summary.histogram("weights", weight['in,'+str(i)])
 
   for i in last_level:
-      weight[str(i)+',out'] = tf.Variable(tf.truncated_normal([1, dim_out], stddev=0.1), name="W_out")
+      weight[str(i)+',out'] = tf.Variable(tf.truncated_normal([1, dim_out], stddev=np.sqrt(2/len(last_level))), name="W_out")
+      # weight[str(i)+',out'] = tf.Variable(tf.truncated_normal([1, dim_out], stddev=0.1), name="W_out")
       # tf.summary.histogram("weights", weight[str(i)+',out'])
 
-  bias['out'] = tf.Variable(tf.truncated_normal([1,dim_out], stddev=0.1), name="B_out")
+  bias['out'] = tf.Variable(tf.truncated_normal([1,dim_out], stddev=0), name="B_out")
   # tf.summary.histogram("biases", bias['out'])
 
   with tf.name_scope("resnet"):
@@ -90,7 +121,7 @@ def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, opti
   print('Network connecting')
 
   for i in first_level:
-      n[i] = tf.nn.relu(tf.matmul(x, weight['in,'+str(i)]) + bias[str(i)])
+      n[i] = tf.nn.leaky_relu(tf.matmul(x, weight['in,'+str(i)]) + bias[str(i)])
 
   def process(v):
       activation = tf.Variable(0.)
@@ -100,7 +131,7 @@ def model(adj,res_connect, weights, X_train, y_train, X_test, y_test, conf, opti
           process(w)
           activation += weight[str(v) + ',' + str(w)] * n[w]
           # activation += tf.nn.dropout(weight[str(v) + ',' + str(w)],keep_prob=conf[str(w)+"_"+str(v)]) * n[w]
-      n[v] = tf.nn.relu(activation + bias[str(v)])
+      n[v] = tf.nn.leaky_relu(activation + bias[str(v)])
 
   for v in last_level:
       process(v)

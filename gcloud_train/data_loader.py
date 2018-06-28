@@ -10,7 +10,7 @@ def one_hot(y, n_classes=2):
     return onehot
 
 
-def train_test_split(X, y, tp=0.6, vp=None):
+def train_test_split(X, y, tp=0.8, vp=None):
     n = X.shape[0]
     indices = np.arange(n)
     np.random.shuffle(indices)
