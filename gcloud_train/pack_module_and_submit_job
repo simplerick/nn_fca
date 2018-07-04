@@ -1,0 +1,7 @@
+gcloud ml-engine jobs submit training titanic \
+    --staging-bucket gs://Твое название \
+    --job-dir gs://Твое название \
+    --package-path /твой-полный-путь \
+    --module-name название папки.task \
+    --python-version 3.5 \
+    --runtime-version 1.8 \
